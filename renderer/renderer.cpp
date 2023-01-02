@@ -31,19 +31,6 @@ struct SwapChainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
-const std::vector<Vertex> vertices = {
-    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
-};
-
-// 1st triangle: vertex #0, #1, #2
-// 2nd triangle: vertex #2, #3, #0
-const std::vector<uint16_t> indices = {
-    0, 1, 2, 2, 3, 0
-};
-
 static VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
@@ -265,11 +252,8 @@ void Renderer::cleanup() {
 
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
-    vkDestroyBuffer(device, indexBuffer, nullptr);
-    vkFreeMemory(device, indexBufferMemory, nullptr);
-
-    vkDestroyBuffer(device, vertexBuffer, nullptr);
-    vkFreeMemory(device, vertexBufferMemory, nullptr);
+    clearBuffer(indexBuffer, indexBufferMemory);
+    clearBuffer(vertexBuffer, vertexBufferMemory);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
@@ -934,8 +918,9 @@ void Renderer::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width,
 }
 
 void Renderer::recreateVertexBuffer(std::vector<Vertex>& vertices) {
-    vkDestroyBuffer(device, indexBuffer, nullptr);
-    vkFreeMemory(device, indexBufferMemory, nullptr);
+    if(!recreate_vertices) return;
+
+    clearBuffer(vertexBuffer, vertexBufferMemory);
 
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
@@ -958,11 +943,14 @@ void Renderer::recreateVertexBuffer(std::vector<Vertex>& vertices) {
 
     vkDestroyBuffer(device, stagingBuffer, nullptr);
     vkFreeMemory(device, stagingBufferMemory, nullptr);
+
+    recreate_vertices = false;
 }
 
 void Renderer::recreateIndexBuffer(std::vector<uint16_t>& indices) {
-    vkDestroyBuffer(device, indexBuffer, nullptr);
-    vkFreeMemory(device, indexBufferMemory, nullptr);
+    if(!recreate_indices) return;
+    
+    clearBuffer(indexBuffer, indexBufferMemory);
 
     VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
     
@@ -985,6 +973,8 @@ void Renderer::recreateIndexBuffer(std::vector<uint16_t>& indices) {
 
     vkDestroyBuffer(device, stagingBuffer, nullptr);
     vkFreeMemory(device, stagingBufferMemory, nullptr);
+    
+    recreate_indices = false;
 }
 
 void Renderer::createUniformBuffers() {
@@ -1215,7 +1205,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
 
-        vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices_.size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 
@@ -1266,15 +1256,15 @@ void Renderer::drawFrame() {
     /* ---------------- */
     // 1. Create vertex buffer then allocate memory
     // 2. Init vertex buffer with CPU data
-    recreateVertexBuffer(vertices);
+    recreateVertexBuffer(vertices_);
     
     // Create index buffer to construct geometries (triangle) from vertex data
-    recreateIndexBuffer(indices);
-    
+    recreateIndexBuffer(indices_);
+
     // Add a host barrier here
     // [Start of single host thread]
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-
+    
     // Get the index for the next image to present from swap chain
     // This API signals imageAvailableSemaphore upon completion
     uint32_t imageIndex;
@@ -1525,3 +1515,9 @@ bool Renderer::checkValidationLayerSupport() {
 
     return true;
 }
+
+void Renderer::clearBuffer(VkBuffer& buffer, VkDeviceMemory& memory) {
+    vkDestroyBuffer(device, buffer, nullptr);
+    vkFreeMemory(device, memory, nullptr);
+}
+

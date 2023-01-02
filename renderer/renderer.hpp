@@ -66,7 +66,20 @@ public:
         return true;
     }
 
+    void set_vertices(std::vector<Vertex>& vertices) {
+        vertices_ = vertices;
+        recreate_vertices = true;
+    }
+    
+    void set_indices(std::vector<uint16_t>& indices) {
+        indices_ = indices;
+        recreate_indices = true;
+    }
+
 private:
+    std::vector<Vertex> vertices_;
+    std::vector<uint16_t> indices_;
+
     GLFWwindow* window;
 
     VkInstance instance;
@@ -117,6 +130,8 @@ private:
     std::vector<VkFence> inFlightFences;
     uint32_t currentFrame = 0;
     bool framebufferResized = false;
+    bool recreate_vertices = true;
+    bool recreate_indices = true;
 
     void initVulkan();
     void initWindow(); 
@@ -165,11 +180,13 @@ private:
     /* Create Resources */
     void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     VkImageView createImageView(VkImage image, VkFormat format);
-    void createVertexBuffer(std::vector<Vertex>& vertices);
-    void createIndexBuffer(std::vector<uint16_t>& indices);
     void createUniformBuffers();
     void createDescriptorSets();
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+    void recreateVertexBuffer(std::vector<Vertex>& vertices);
+    void recreateIndexBuffer(std::vector<uint16_t>& indices);
+
+    void clearBuffer(VkBuffer& buffer, VkDeviceMemory& memory);
 
     /* Runtime */
     void createCommandBuffers();
