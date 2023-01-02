@@ -6,6 +6,8 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_VISIBILITY_PRESET default)
 
+include("cmake/app.cmake")
+
 ################################
 # Prepare third party packages #
 ################################
@@ -16,7 +18,8 @@ message("Using Vulkan Lib: ${Vulkan_LIBRARIES}")
 find_package(glm REQUIRED)
 find_package(glfw3 REQUIRED)
 
-add_subdirectory(renderer)
+add_subdirectory(framework)
+add_subdirectory(tests)
 
 add_executable(vulkan_app main.cpp)
 target_link_libraries(vulkan_app 
@@ -24,8 +27,7 @@ target_link_libraries(vulkan_app
                       renderer)
 target_include_directories(vulkan_app PUBLIC
                            ${Vulkan_LIBRARIES}
-                           ${CMAKE_SOURCE_DIR}
-                           ${CMAKE_SOURCE_DIR}/renderer)
+                           ${CMAKE_SOURCE_DIR})
 
-execute_process(COMMAND glslc "${CMAKE_SOURCE_DIR}/shaders/shader.frag" -o "${CMAKE_SOURCE_DIR}/shaders/frag.spv")
-execute_process(COMMAND glslc "${CMAKE_SOURCE_DIR}/shaders/shader.vert" -o "${CMAKE_SOURCE_DIR}/shaders/vert.spv")
+execute_process(COMMAND glslc "${CMAKE_SOURCE_DIR}/framework/shaders/shader.frag" -o "${CMAKE_SOURCE_DIR}/framework/shaders/frag.spv")
+execute_process(COMMAND glslc "${CMAKE_SOURCE_DIR}/framework/shaders/shader.vert" -o "${CMAKE_SOURCE_DIR}/framework/shaders/vert.spv")

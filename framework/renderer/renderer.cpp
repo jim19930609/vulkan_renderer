@@ -1,7 +1,7 @@
-#include "renderer.hpp"
+#include "framework/renderer/renderer.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include <third_party/stb_image.h>
+#include "third_party/stb_image.h"
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -572,8 +572,8 @@ void Renderer::createDescriptorSetLayout() {
 
 void Renderer::createGraphicsPipeline() {
     // Read, compile and create shader stages
-    auto vertShaderCode = readFile("shaders/vert.spv");
-    auto fragShaderCode = readFile("shaders/frag.spv");
+    auto vertShaderCode = readFile("framework/shaders/vert.spv");
+    auto fragShaderCode = readFile("framework/shaders/frag.spv");
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -730,7 +730,7 @@ void Renderer::createCommandPool() {
 void Renderer::createTextureImage() {
     // Read image from disk
     int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load("textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc* pixels = stbi_load("framework/textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     if (!pixels) {

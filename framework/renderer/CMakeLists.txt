@@ -6,5 +6,4 @@ target_link_libraries(renderer
 target_include_directories(renderer PUBLIC
                            ${Vulkan_LIBRARIES}
                            ${CMAKE_SOURCE_DIR}
-                           ${CMAKE_SOURCE_DIR}/renderer)
-
+                           )
