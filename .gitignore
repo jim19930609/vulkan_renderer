@@ -1,2 +1,2 @@
-shaders/*.spv
+framework/shaders/*.spv
 build
