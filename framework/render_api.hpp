@@ -13,55 +13,41 @@ class RenderAPI {
     bool update_buffers = false;
 
     void draw_box(glm::vec3 center_pos, glm::vec3 color) {
-        float length = 0.5;
+        float length = 2.0;
         float hl = length / 2;
         // up/down, left/right, front/back        
-        glm::vec3 dlb = (center_pos - hl, center_pos - hl, center_pos - hl);
-        glm::vec3 dlf = (center_pos - hl, center_pos - hl, center_pos + hl);
-        glm::vec3 drb = (center_pos - hl, center_pos + hl, center_pos - hl);
-        glm::vec3 drf = (center_pos - hl, center_pos + hl, center_pos + hl);
+        glm::vec3 dlb = center_pos + glm::vec3(- hl, - hl, - hl);
+        glm::vec3 dlf = center_pos + glm::vec3(- hl, - hl, + hl);
+        glm::vec3 ulf = center_pos + glm::vec3(+ hl, - hl, + hl);
+        glm::vec3 ulb = center_pos + glm::vec3(+ hl, - hl, - hl);
         
-        glm::vec3 urf = (center_pos + hl, center_pos + hl, center_pos + hl);
-        glm::vec3 ulf = (center_pos + hl, center_pos - hl, center_pos + hl);
-        glm::vec3 urb = (center_pos + hl, center_pos + hl, center_pos - hl);
-        glm::vec3 ulb = (center_pos + hl, center_pos - hl, center_pos - hl);
+        glm::vec3 drb = center_pos + glm::vec3(- hl, + hl, - hl);
+        glm::vec3 drf = center_pos + glm::vec3(- hl, + hl, + hl);
+        glm::vec3 urf = center_pos + glm::vec3(+ hl, + hl, + hl);
+        glm::vec3 urb = center_pos + glm::vec3(+ hl, + hl, - hl);
         
-        /*
-        glm::vec3 dlb = glm::vec3(0.2, 0.0, 0.1);
-        glm::vec3 dlf = glm::vec3(0.3, 0.3, 0.0);
-        glm::vec3 drb = glm::vec3(0.1, 0.0, 0.2);
-        vertices_.push_back({dlb, {1.0f, 0.0f, 0.0f}, glm::vec2(0, 0)});
-        vertices_.push_back({dlf, {0.0f, 1.0f, 0.0f}, glm::vec2(0, 0)});
-        vertices_.push_back({drb, {0.0f, 0.0f, 1.0f}, glm::vec2(0, 0)});
-        */
         vertices_.push_back({dlb, color, glm::vec2(0, 0)});
         vertices_.push_back({dlf, color, glm::vec2(0, 0)});
+        vertices_.push_back({ulf, color, glm::vec2(0, 0)});
+        vertices_.push_back({ulb, color, glm::vec2(0, 0)});
         vertices_.push_back({drb, color, glm::vec2(0, 0)});
         vertices_.push_back({drf, color, glm::vec2(0, 0)});
         vertices_.push_back({urf, color, glm::vec2(0, 0)});
         vertices_.push_back({urb, color, glm::vec2(0, 0)});
-        vertices_.push_back({ulf, color, glm::vec2(0, 0)});
-        vertices_.push_back({ulb, color, glm::vec2(0, 0)});
         
-        /*
         std::vector<uint16_t> box_indices = { 
-                                             0, 1, 2, // down
-                                            };
-        */
-
-        std::vector<uint16_t> box_indices = { 
-                                             0, 1, 2, // down
-                                             1, 2, 3, // down
-                                             4, 5, 6, // up
-                                             5, 6, 7, // up
-                                             0, 1, 7, // left
-                                             1, 6, 7, // left
-                                             2, 3, 5, // right
-                                             3, 4, 5, // right
-                                             1, 3, 4, // front
-                                             1, 4, 6, // front
-                                             0, 2, 5, // back
-                                             0, 5, 7, // back
+                                             0, 1, 3, // up
+                                             1, 2, 3, // up
+                                             4, 5, 7, // down
+                                             5, 6, 7, // down
+                                             0, 1, 5, // left
+                                             0, 4, 5, // left
+                                             3, 2, 6, // right
+                                             3, 7, 6, // right
+                                             1, 5, 6, // front
+                                             1, 2, 6, // front
+                                             0, 4, 7, // back
+                                             0, 3, 7, // back
                                             };
         indices_.insert(indices_.end(), box_indices.begin(), box_indices.end());
     }
@@ -83,6 +69,7 @@ class RenderAPI {
     void draw_object(glm::vec3 center_pos, glm::vec3 color, ObjectType type) {
         switch (type) {
             case ObjectType::BOX: {
+                std::cout << 1111111 << std::endl;
                 draw_box(center_pos, color);
                 break;
             }
