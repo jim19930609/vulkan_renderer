@@ -15,6 +15,8 @@ find_package(Vulkan REQUIRED)
 message("Using Vulkan Include Dir: ${Vulkan_INCLUDE_DIRS}")
 message("Using Vulkan Lib: ${Vulkan_LIBRARIES}")
 
+add_definitions(-DFRAMEWORK_DIR="${CMAKE_SOURCE_DIR}/framework/")
+
 find_package(glm REQUIRED)
 find_package(glfw3 REQUIRED)
 

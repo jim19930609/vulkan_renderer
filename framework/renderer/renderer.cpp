@@ -1,4 +1,5 @@
 #include "framework/renderer/renderer.hpp"
+#include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "third_party/stb_image.h"
@@ -7,6 +8,9 @@ const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 const int MAX_FRAMES_IN_FLIGHT = 2;
 const bool enableValidationLayers = true;
+    
+std::string framework_dir = (FRAMEWORK_DIR);
+
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
@@ -94,7 +98,7 @@ std::array<VkVertexInputAttributeDescription, 3> Vertex::getAttributeDescription
 
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
     attributeDescriptions[1].binding = 0;
@@ -572,8 +576,8 @@ void Renderer::createDescriptorSetLayout() {
 
 void Renderer::createGraphicsPipeline() {
     // Read, compile and create shader stages
-    auto vertShaderCode = readFile("framework/shaders/vert.spv");
-    auto fragShaderCode = readFile("framework/shaders/frag.spv");
+    auto vertShaderCode = readFile(framework_dir + "/shaders/vert.spv");
+    auto fragShaderCode = readFile(framework_dir + "/shaders/frag.spv");
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -624,8 +628,9 @@ void Renderer::createGraphicsPipeline() {
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
-    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    //rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterizer.cullMode = VK_CULL_MODE_NONE;
+    //rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
 
     VkPipelineMultisampleStateCreateInfo multisampling{};
@@ -730,7 +735,8 @@ void Renderer::createCommandPool() {
 void Renderer::createTextureImage() {
     // Read image from disk
     int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load("framework/textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    std::string texture_dir = framework_dir + "/textures/texture.jpg";
+    stbi_uc* pixels = stbi_load(texture_dir.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     if (!pixels) {
@@ -1242,25 +1248,15 @@ void Renderer::updateUniformBuffer(uint32_t currentImage) {
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     UniformBufferObject ubo{};
-    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
-    ubo.proj[1][1] *= -1;
+    //ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    ubo.model = glm::mat4(1.0f);
 
+    ubo.view = glm::lookAt(glm::vec3(3.0f, 3.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    ubo.proj = glm::perspective(glm::radians(120.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.001f, 100.0f);
     memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 }
 
 void Renderer::drawFrame() {
-    /* ---------------- */
-    /* Create Resources */
-    /* ---------------- */
-    // 1. Create vertex buffer then allocate memory
-    // 2. Init vertex buffer with CPU data
-    recreateVertexBuffer(vertices_);
-    
-    // Create index buffer to construct geometries (triangle) from vertex data
-    recreateIndexBuffer(indices_);
-
     // Add a host barrier here
     // [Start of single host thread]
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
@@ -1277,6 +1273,16 @@ void Renderer::drawFrame() {
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
+    
+    /* ---------------- */
+    /* Create Resources */
+    /* ---------------- */
+    // 1. Create vertex buffer then allocate memory
+    // 2. Init vertex buffer with CPU data
+    recreateVertexBuffer(vertices_);
+    
+    // Create index buffer to construct geometries (triangle) from vertex data
+    recreateIndexBuffer(indices_);
 
     updateUniformBuffer(currentFrame);
 

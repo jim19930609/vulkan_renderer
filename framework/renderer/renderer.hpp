@@ -65,13 +65,21 @@ public:
         vkDeviceWaitIdle(device);
         return true;
     }
+    
+    void draw() {
+        while(!glfwWindowShouldClose(window)) {
+            glfwPollEvents();
+            drawFrame();
+        }
+        vkDeviceWaitIdle(device);
+    }
 
-    void set_vertices(std::vector<Vertex>& vertices) {
+    void set_vertices(const std::vector<Vertex>& vertices) {
         vertices_ = vertices;
         recreate_vertices = true;
     }
     
-    void set_indices(std::vector<uint16_t>& indices) {
+    void set_indices(const std::vector<uint16_t>& indices) {
         indices_ = indices;
         recreate_indices = true;
     }
